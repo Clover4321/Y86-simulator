@@ -1,5 +1,8 @@
 var asmIns;
 (function(){
+	window.VM = {
+		Memory : new buildMemory,
+	};
 	function init() {
 		var dest = document.getElementById("drop_area");
 		dest.addEventListener("dragover", function(ev) {

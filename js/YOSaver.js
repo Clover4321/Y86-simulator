@@ -11,13 +11,13 @@
 	text_options_form.addEventListener("submit", function(event) {
 	event.preventDefault();
 	var BB = get_blob();
-	if (!asmIns) {
+	if (!window.output) {
 		alert("You have not generated anything!");
 		return;
 	};
 	saveAs(
 		  new BB(
-			  [asmIns]
+			  [window.output]
 			, {type: "text/plain;charset=" + document.characterSet}
 		)
 		, (text_filename.value || text_filename.placeholder) + ".txt"
