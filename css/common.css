@@ -1,77 +1,128 @@
-.drop_top {
-	width: 100%;
-	height: 70px;
-	font-size: 36px;
-	font-weight: bold;
-	text-align: center;
-	border: 5px dashed;
-	border-color: lightgrey;
+html {
+	color: white;
 }
 
-html {
-	background-color: #fff;
-}
 body {
-	width: 1280px;
+	background: url(../img/bg.jpg);
 	margin: 0 auto;
-	font-family: Verdana, Helvetica, Arial, sans-serif;
-	padding: 7px 25px 70px;
-	background-color: #fff;
+	font-family: "HelveticaNeue LT 35 Thin";
+	font-size: 20px;
+	color: white;
+	padding: 8px 30px 70px;
 }
+
 h1 {
 	font-family: "HelveticaNeue LT 35 Thin";
 	text-align: center center;
 	background-image: linear-gradient(135deg, #5fa4ee, #56e7ca);
-    background-color: #5fa4ee;
+    background-color: #5fa4ee; 
+    -webkit-filter: blur(5px);
 	padding: 1em 0;
     text-align: center;
     color: white;
-    font-weight: 300;
+	font-size: 30px;
     text-transform: uppercase;
     letter-spacing: 0.4em;
     margin-left: 0.4em;
 	border-radius: 0.3em 0.3em;
 }
+
 form {
 	text-align: center;
 	margin-top: 5px;
-}
-.input {
-	width: 500px;
-	height: 300px;
-	margin: 0 auto;
-	box-shadow: 0 0 10px 2px rgba(0, 0, 0, .5);
-    box-sizing: content-box;
-	display: block;
 }
 
 .filename {
 	text-align: right;
 }
 
-#controlBar{
+#controlBar1{
+	padding: 10px;
 	text-align: center;
-	height: 50px;
+	height: 80px;
+}
+
+#controlBar2{
+	padding: 5px;
 }
 
 #currentCycle{
-	border: 2px dashed;
-	border-color: lightgray;
+	height: 40px;
+	font-size: 30px;
+}
+
+#currentStatus{
+	font-size: 30px;
 }
 
 .regContent{
 	text-align: center;
-	border: 2px dashed;
-	border-color: lightgray;
+	background-color: rgba(255,255,255,0.2);
 }
 
 #regTitle{
-	height: 30px;
-	border: 2px dashed;
-	border-color: lightgray;
+	height: 60px;
 }
 
 .topArea{
-	height: 50px;
+	height: 80px;
 	text-align: center;
+}
+
+#frequency{
+	width: 50px;
+	text-align: right;
+}
+
+#text-options {
+	padding-top: 20px;
+}
+
+input{
+	background: rgba(255,255,255,0);
+	color: white;
+}
+
+#run:hover {
+	background-color: rgba(0,0,0,0.2);
+}
+
+#run:active{
+	background-color: rgba(0,0,0,0.5);
+}
+
+#pause:hover {
+	background-color: rgba(0,0,0,0.2);
+}
+
+#pause:active{
+	background-color: rgba(0,0,0,0.5);
+}
+
+#reset:hover {
+	background-color: rgba(0,0,0,0.2);
+}
+
+#reset:active{
+	background-color: rgba(0,0,0,0.5);
+}
+
+#lastCycle:hover {
+	background-color: rgba(0,0,0,0.2);
+}
+
+#lastCycle:active{
+	background-color: rgba(0,0,0,0.5);
+}
+
+#nextCycle:hover {
+	background-color: rgba(0,0,0,0.2);
+}
+
+#nextCycle:active{
+	background-color: rgba(0,0,0,0.5);
+}
+
+.col-md-2:hover{
+	background-color: rgba(0,0,0,0.2);
 }

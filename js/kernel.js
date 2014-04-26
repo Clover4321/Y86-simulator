@@ -1,6 +1,7 @@
 (function () {
 	
 	window.output = "";
+
 	//指令宏定义
 	var INOP = 0;
 	var IHALT = 1;
@@ -16,6 +17,10 @@
 	var IPOPL = 0xB;
 	var RNONE = 8;
 	var ALUADD = 0;
+
+	var SNOR = 0;
+	var SHLT = 1;
+
 
 	//跳转类型宏定义
 	var IJMP = 0;
@@ -47,11 +52,15 @@
 	positionF.prototype={
 		nop_state : function()
 		{
-
+			this.state = SNOR;
 		},
 		set_predPC : function( predPC )
 		{
 			this.predPC = predPC;
+		},
+		set_state : function( state )
+		{
+			this.state = state;
 		},
 		toString : function()
 		{
@@ -70,10 +79,15 @@
 	positionD.prototype={
 		nop_state : function()
 		{
-			this.icode = 1;
+			this.icode = 0;
 			this.ifun = 0;
+			this.state = SNOR;
 			//this.rA = RNONE;
 			//this.rb = RNONE;
+		},
+		set_state : function( state )
+		{
+			this.state = state;
 		},
 		set_icode : function( icode )
 		{
@@ -109,7 +123,7 @@
 						"D_ValC = 0x"+this.ValC.toString(16)+'\n'+
 						"D_ValP = 0x"+this.ValP.toString(16)+'\n';
 			$("#D_icode").html("0x"+this.icode.toString(16));
-			$("#E_ValB").html("0x"+this.ifun.toString(16));
+			$("#D_ifun").html("0x"+this.ifun.toString(16));
 			$("#D_rA").html("0x"+this.rA.toString(16));
 			$("#D_rB").html("0x"+this.rB.toString(16));
 			$("#D_ValC").html("0x"+this.ValC.toString(16));
@@ -126,12 +140,17 @@
 	positionE.prototype={
 		nop_state : function()
 		{
-			this.icode = 1;
+			this.icode = 0;
 			this.ifun = 0;
 			this.dstM = RNONE;
 			this.dstE = RNONE;
 			this.d_srcB = RNONE;
 			this.d_srcA = RNONE;
+			this.state = SNOR;
+		},
+		set_state : function( state )
+		{
+			this.state = state;
 		},
 		set_icode : function( icode )
 		{
@@ -203,10 +222,15 @@
 	positionM.prototype={
 		nop_state : function()
 		{
-			this.icode = 1;
+			this.icode = 0;
 			this.dstE = RNONE;
 			this.dstM = RNONE;
-			this.Bch = 0;
+			this.Bch = false;
+			this.state = SNOR;
+		},
+		set_state : function( state )
+		{
+			this.state = state;
 		},
 		set_icode : function( icode )
 		{
@@ -236,13 +260,13 @@
 		{
 			var info = "Memory:\n"+
 						"M_icode = 0x"+this.icode.toString(16)+'\n'+
-						"M_Bch = "+this.Bch.toString(16)+'\n'+
+						"M_Bch = "+this.Bch.toString()+'\n'+
 						"M_ValE = 0x"+this.ValE.toString(16)+'\n'+
 						"M_ValA = 0x"+this.ValA.toString(16)+'\n'+
 						"M_dstE = 0x"+this.dstE.toString(16)+'\n'+
 						"M_dstM = 0x"+this.dstM.toString(16)+'\n';
 			$("#M_icode").html("0x"+this.icode.toString(16));
-			$("#M_Bch").html("0x"+this.Bch.toString(16));
+			$("#M_Bch").html(this.Bch.toString());
 			$("#M_ValE").html("0x"+this.ValE.toString(16));
 			$("#M_ValA").html("0x"+this.ValA.toString(16));
 			$("#M_dstE").html("0x"+this.dstE.toString(16));
@@ -259,9 +283,14 @@
 	positionW.prototype={
 		nop_state : function()
 		{
-			this.icode = 1;
+			this.icode = 0;
 			this.dstE = RNONE;
 			this.dstM = RNONE;
+			this.state = SNOR;
+		},
+		set_state : function( state )
+		{
+			this.state = state;
 		},
 		set_icode : function( icode )
 		{
@@ -310,13 +339,20 @@
 	{
 		execute : function( F, D, newF, SPC )
 		{
+			D.set_state(F.state);
+			newF.set_state(F.state);
 			SPC.set_F_predPC( F.predPC );
 			var f_pc = SPC.select();
-			var ins = this.addr[f_pc];
+			var B1 = this.addr.readBytes(f_pc,1);
+			var B2 = this.addr.readBytes(f_pc+1,1);
+			var B3 = this.addr.readBytes(f_pc+2,4);
+			var B4 = this.addr.readBytes(f_pc+1,4);
 			//document.write( "0x"+f_pc.toString(16) );
 			$("#F_predPC").html("0x"+f_pc.toString(16));
-			D.set_icode( Number("0x"+ins[0]) );
-			D.set_ifun( Number("0x"+ins[1]) );
+			D.set_icode( Number("0x"+B1[0]) );
+			D.set_ifun( Number("0x"+B1[1]) );
+			D.set_rA(RNONE);
+			D.set_rB(RNONE);
 			var nextPC;
 			switch( D.icode )
 			{
@@ -325,69 +361,77 @@
 					break;
 				case IHALT:
 					nextPC = f_pc+1;
+					D.set_state( SHLT );
 					break;
 				case IRET:
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					//D.set_rA( Number("0x"+B2[0]) );
+					//D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+1;
 					break;
 
 				case IRRMOVL:
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+2;
 					break;
 				case IOPL:
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+2;
 					break;
 				case IPUSHL:
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+2;
 					break;
 				case IPOPL:
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+2;
 					break;
 
 				case IIRMOVL:
-					var nor = LittleEnd2Normal( ins.substring(4) );
+					var nor = LittleEnd2Normal( B3 );
 					D.set_ValC( Number("0x"+nor) );
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+6;
 					break;
 				case IRMMOVL:
-					var nor = LittleEnd2Normal( ins.substring(4) );
+					var nor = LittleEnd2Normal( B3 );
 					D.set_ValC( Number("0x"+nor) );
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+6;
 					break;
 				case IMRMOVL:
-					var nor = LittleEnd2Normal( ins.substring(4) );
+					var nor = LittleEnd2Normal( B3 );
 					D.set_ValC( Number("0x"+nor) );
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA( Number("0x"+B2[0]) );
+					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+6;
 					break;
 
 				case IJXX:
-					var nor = LittleEnd2Normal( ins.substring(2) );
+					var nor = LittleEnd2Normal( B4 );
 					D.set_ValC( Number("0x"+nor) );
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					//D.set_rA( Number("0x"+B2[]) );
+					//D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA(RNONE);
+					D.set_rB(RNONE);
 					nextPC = f_pc+5;
 					break;
 				case ICALL:
-					var nor = LittleEnd2Normal( ins.substring(2) );
+					var nor = LittleEnd2Normal( B4 );
 					D.set_ValC( Number("0x"+nor) );
-					D.set_rA( Number("0x"+ins[2]) );
-					D.set_rB( Number("0x"+ins[3]) );
+					//D.set_rA( Number("0x"+ins[2]) );
+					//D.set_rB( Number("0x"+ins[3]) );
+					D.set_rA(RNONE);
+					D.set_rB(RNONE);
 					nextPC = f_pc+5;
+					break;
+				default:
+					D.set_state(SHLT);
 					break;
 			}
 			D.set_ValP( nextPC );
@@ -408,6 +452,7 @@
 	executeD.prototype={
 		execute : function(D,E,FB,SFA,PCL)
 		{
+			E.set_state(D.state);
 			E.set_icode( D.icode );
 			E.set_ifun( D.ifun );
 			E.ValC = D.ValC;
@@ -527,6 +572,7 @@
 	executeE.prototype={
 		execute : function( E,M,FB,SFA,PCL )
 		{
+			M.set_state(E.state);
 			M.set_icode( E.icode ); 
 			M.set_ValA( E.ValA );
 			M.set_dstE( E.dstE );
@@ -535,40 +581,40 @@
 			{
 				case INOP:
 				case IHALT:
-					M.Bch = 0;
+					M.Bch = false;
 					M.ValE = 0;
 					break;
 
 				case IRRMOVL:
 					if( E.ifun == 0 )
 					{
-						M.Bch = 0;
+						M.Bch = false;
 						M.set_ValE( E.ValA );
 
 					}
 					else
 					{
-						M.Bch = 0;
+						M.Bch = false;
 						var flag;
 						switch( E.ifun )
 						{
 							case IJLE:
-								flag = (this.reg[RSF]^this.reg[ROF])|this.reg[RZF];
+								flag = (this.reg[RSF] != this.reg[ROF]) || this.reg[RZF];
 								break;
 							case IJL:
-								flag = this.reg[RSF]^this.reg[ROF];
+								flag = this.reg[RSF] != this.reg[ROF];
 								break;
 							case IJE:
 								flag = this.reg[RZF];
 								break;
 							case IJNE:
-								flag = ~this.reg[RZF];
+								flag = !this.reg[RZF];
 								break;
 							case IJGE:
-								flag = ~(this.reg[RSF]^this.reg[ROF]);
+								flag = !(this.reg[RSF]!=this.reg[ROF]);
 								break;
 							case IJG:
-								flag = ~(this.reg[RSF]^this.reg[ROF])&~this.reg[RZF];
+								flag = !(this.reg[RSF]^this.reg[ROF])&&!this.reg[RZF];
 								break;
 						}
 						M.dstE = flag ? D.rB : RNONE;
@@ -577,43 +623,60 @@
 					break;
 
 				case IIRMOVL:
-					M.Bch = 0;
+					M.Bch = false;
 					M.ValE = E.ValC;
 					break;
 
 				case IRMMOVL:
 				case IMRMOVL:
-					M.Bch = 0;
+					M.Bch = false;
 					M.ValE = E.ValB+E.ValC;
 					break;
 
 				case IOPL:
-					M.Bch = 0;
+					M.Bch = false;
 					switch( E.ifun )
 					{
 					case 0:
-						M.ValE = E.valB+E.valA;
 						var a = E.ValB;
-						var b = E.valA;
+						var b = E.ValA;
+						if( a>0xfffffff )
+						{
+							a = -1*(~a+1);
+						}
+						if( b>0xfffffff )
+						{
+							b = -1*(~b+1);
+						}
+						M.ValE = a+b;
 						var t = M.ValE;
 						this.reg[ROF] = ( a < 0 == b < 0 ) && ( t < 0 != a < 0 );
 						break;
 					case 1:
-						M.ValE = E.valB-E.valA;
+						M.ValE = E.ValB-E.ValA;
 						var a = E.ValB;
-						var b = -1*E.valA;
-						var t = M.ValE;
+						var b = E.ValA;
+						if( a>0xfffffff )
+						{
+							a = -1*(~a+1);
+						}
+						if( b>0xfffffff )
+						{
+							b = -1*(~b+1);
+						}
+						var t = a-b;
+						M.ValE = t;
 						this.reg[ROF] = ( a < 0 == b < 0 ) && ( t < 0 != a < 0 );
 						break;
 					case 2:
-						M.ValE = E.valB&E.valA;
+						M.ValE = E.ValB&E.ValA;
 						break;
 					case 3:
-						M.ValE = E.valB^E.valA;
+						M.ValE = E.ValB^E.ValA;
 						break;
 					}
-					this.reg[RSF] = M.ValE < 0 ? 1 : 0;
-					this.reg[RZF] = M.ValE == 0 ? 1 : 0;
+					this.reg[RSF] = M.ValE < 0 ? true : false;
+					this.reg[RZF] = M.ValE == 0 ? true : false;
 
 				break;
 
@@ -621,25 +684,25 @@
 					switch( E.ifun )
 					{
 						case IJMP:
-							M.Bch = 1;
+							M.Bch = true;
 							break;
 						case IJLE:
-							M.Bch = (this.reg[RSF]^this.reg[ROF])|this.reg[RZF];
+							M.Bch = (this.reg[RSF]!=this.reg[ROF])||this.reg[RZF];
 							break;
 						case IJL:
-							M.Bch = this.reg[RSF]^this.reg[ROF];
+							M.Bch = this.reg[RSF]!=this.reg[ROF];
 							break;
 						case IJE:
 							M.Bch = this.reg[RZF];
 							break;
 						case IJNE:
-							M.Bch = ~this.reg[RZF];
+							M.Bch = !this.reg[RZF];
 							break;
 						case IJGE:
-							M.Bch = ~(this.reg[RSF]^this.reg[ROF]);
+							M.Bch = !(this.reg[RSF]!=this.reg[ROF]);
 							break;
 						case IJG:
-							M.Bch = ~(this.reg[RSF]^this.reg[ROF])&~this.reg[RZF];
+							M.Bch = !(this.reg[RSF]!=this.reg[ROF])&&!this.reg[RZF];
 							break;
 
 					}
@@ -648,13 +711,13 @@
 
 				case IPUSHL:
 				case ICALL:
-					M.Bch = 0;
+					M.Bch = false;
 					M.ValE = E.ValB-4;
 				break;
 
 				case IPOPL:
 				case IRET:
-					M.Bch = 0;
+					M.Bch = false;
 					M.ValE = E.ValB+4;
 				break;
 
@@ -679,6 +742,7 @@
 	executeM.prototype={
 		execute : function( M, W, SPC,FB,SFA,PCL )
 		{
+			W.set_state( M.state );
 			W.set_icode( M.icode );
 			W.set_dstE( M.dstE );
 			W.set_dstM( M.dstM );
@@ -700,10 +764,14 @@
 					break;
 
 				case IRMMOVL:
-					this.addr[M.ValE] = M.ValA;
+					//this.addr[M.ValE] = M.ValA;
+					this.addr.writeBytes(M.ValE,M.ValA);
 					break;
 				case IMRMOVL:
-					W.set_ValM( this.addr[M.ValE] );
+					//W.set_ValM( this.addr[M.ValE] );
+					var raw = this.addr.readBytes(M.ValE,4);
+					var nor = LittleEnd2Normal(raw);
+					W.set_ValM( Number("0x"+nor) );
 					break;
 
 				case IOPL:
@@ -713,19 +781,26 @@
 				break;
 
 				case ICALL:
-					this.addr[M.ValE] = M.ValA;
+					//this.addr[M.ValE] = M.ValA;
+					this.addr.writeBytes(M.ValE,M.ValA);
 					break;
 
 				case IRET:
-					W.ValM = this.addr[M.ValA];
+					var raw = this.addr.readBytes(M.ValA,4);
+					var nor = LittleEnd2Normal(raw);
+					W.set_ValM( Number("0x"+nor) );
 					break;
 
 				case IPUSHL:
-					this.addr[M.ValE] = M.ValA;
+					//this.addr[M.ValE] = M.ValA;
+					this.addr.writeBytes(M.ValE,M.ValA);
 					break;
 
 				case IPOPL:
-					W.ValM = this.addr[M.ValA];
+					//W.ValM = this.addr[M.ValA];
+					var raw = this.addr.readBytes(M.ValA,4);
+					var nor = LittleEnd2Normal(raw);					
+					W.set_ValM( Number("0x"+nor) );
 					break;
 
 			}
@@ -776,7 +851,9 @@
 				case IRMMOVL:
 					break;
 				case IMRMOVL:
-					this.reg[W.dstM] = W.ValM;
+					//var nor = LittleEnd2Normal(W.ValM); 
+					//this.reg[W.dstM] = Number("0x"+nor);
+					this.reg[W.dstM]=W.ValM;
 					break;
 
 				case IOPL:
@@ -1056,7 +1133,7 @@
 		initialize : function()
 		{
 			this.M_icode = -1;
-			this.e_Bch = 0;
+			this.e_Bch = false;
 			this.E_dstM = -2;
 			this.E_icode = -1;
 			this.d_srcB = -3;
@@ -1127,6 +1204,22 @@
 		return nor;
 	}
 
+	//将读入的内存转换到整型
+	function RawToInt( raw )
+	{
+		var nor = LittleEnd2Normal( raw );
+		var n = Number("0x"+nor);
+		if( n <= 0xfffffff )
+		{
+			return n;
+		}
+		else
+		{
+			return ~n+1;
+		}
+	}
+
+
 	//克隆一个对象
 	function objClone(obj)
 	{
@@ -1150,61 +1243,7 @@
 	Y86Simulator.prototype={
 		buildMemory : function()
 		{
-			this.addr = new Array();
-			this.addr[0x000] = "308400010000";
-			this.addr[0x006] = "308500010000";
-			this.addr[0x00c] = "7024000000";
-			this.addr[0x014] = "0d000000";
-			this.addr[0x018] = "c0000000";
-			this.addr[0x01c] = "000b0000";
-			this.addr[0x020] = "00a00000";
-			this.addr[0x024] = "308004000000";
-			this.addr[0x02a] = "a008"
-			this.addr[0x02c] = "308214000000";
-			this.addr[0x032] = "a028";
-			this.addr[0x034] = "803a000000";
-			this.addr[0x039] = "10";
-			this.addr[0x03a] = "a058";
-			this.addr[0x03c] = "2045";
-			this.addr[0x03e] = "501508000000";
-			this.addr[0x044] = "50250c000000";
-			this.addr[0x04a] = "308000000000";
-			this.addr[0x050] = "6222";
-			this.addr[0x052] = "7374000000";
-			this.addr[0x057] = "506100000000";
-			this.addr[0x05d] = "6060";
-			this.addr[0x05f] = "308304000000";
-			this.addr[0x065] = "6031";
-			this.addr[0x067] = "3083ffffffff";
-			this.addr[0x06d] = "6032";
-			this.addr[0x06f] = "7457000000";
-			this.addr[0x074] = "b058";
-			this.addr[0x076] = "90";
-			this.addr[0x77] = "0";
-			this.addr[0x100] = "0";
-			this.addr[0x101] = "0";
-			this.addr[0x102] = "0";
-			this.addr[0x103] = "0";
-			this.addr[0x104] = "0";
-			this.addr[0x105] = "0";
-			this.addr[0x106] = "0";
-			this.addr[0x107] = "0";
-			this.addr[0x108] = "0";
-			this.addr[0x109] = "0";
-			this.addr[0x10a] = "0";
-			this.addr[0x10b] = "0";
-			this.addr[0x10c] = "0";
-			this.addr[0x10d] = "0";
-			this.addr[0x10e] = "0";
-			this.addr[0x10f] = "0";
-			this.addr[0x110] = "0";
-			this.addr[0x114] = "0";
-			this.addr[0x118] = "0";
-			this.addr[0x11c] = "0";
-			this.addr[0x120] = "0";
-			this.addr[0x124] = "0";
-
-
+			this.addr=window.VM.Memory;
 		},
 		initialize : function()
 		{
@@ -1213,9 +1252,9 @@
 			{
 				this.reg[i]=0;
 			}
-			this.reg[ROF] = 0;
-			this.reg[RZF] = 0;
-			this.reg[RSF] = 0;
+			this.reg[ROF] = false;
+			this.reg[RZF] = false;
+			this.reg[RSF] = false;
 
 			this.curF = new positionF();
 			this.curD = new positionD();
@@ -1225,6 +1264,7 @@
 
 
 			this.curF.set_predPC(0);
+			this.curF.set_state( SNOR );
 
 			this.curD.set_icode(0);
 			this.curD.set_ifun(0);
@@ -1232,6 +1272,7 @@
 			this.curD.set_rB(0);
 			this.curD.set_ValC(0);
 			this.curD.set_ValP(0);
+			this.curD.set_state( SNOR );
 
 			this.curE.set_icode(0);
 			this.curE.set_ifun(0);
@@ -1242,22 +1283,31 @@
 			this.curE.set_dstM(0);
 			this.curE.set_srcA(0);
 			this.curE.set_srcB(0);
+			this.curE.set_state( SNOR );
 
 			this.curM.set_icode(0);
-			this.curM.set_Bch(0);
+			this.curM.set_Bch(false);
 			this.curM.set_ValE(0);
 			this.curM.set_ValA(0);
 			this.curM.set_dstE(0);
 			this.curM.set_dstM(0);
+			this.curM.set_state( SNOR );
 
 			this.curW.set_icode(0);
 			this.curW.set_ValE(0);
 			this.curW.set_ValM(0);
 			this.curW.set_dstE(0);
 			this.curW.set_dstM(0);
+			this.curW.set_state( SNOR );
+
+			this.inF = objClone(this.curF);
+			this.inD = objClone(this.curD);
+			this.inE = objClone(this.curE);
+			this.inM = objClone(this.curM);
+			this.inW = objClone(this.curW);
 
 			this.SPC = new SelectPC();
-			this.SPC.set_M_Bch( 0 );
+			this.SPC.set_M_Bch( false );
 			this.SPC.set_M_icode( -1 );
 			this.SPC.set_W_icode( -1 );
 
@@ -1280,18 +1330,11 @@
 		},
 		nextCycle : function()
 		{
-			var newF = objClone( this.curF );
-			var newD = objClone( this.curD );
-			var newE = objClone( this.curE );
-			var newM = objClone( this.curM );
-			var newW = objClone( this.curW );
 
-			this.exeF.execute( this.curF, newD, newF, this.SPC );
-			this.exeD.execute( this.curD, newE, this.FB, this.SFA, this.PCL );
-			this.exeE.execute( this.curE, newM, this.FB, this.SFA, this.PCL  );
-			this.exeM.execute( this.curM, newW, this.SPC, this.FB, this.SFA, this.PCL  );
-			this.exeW.execute( this.curW, this.SPC, this.FB, this.SFA  ); 
-
+			if( this.curW.state == SHLT )
+			{
+				return;
+			}
 			var F_stall = this.PCL.F_stall();
 			var D_stall = this.PCL.D_stall();
 			var D_bubble = this.PCL.D_bubble();
@@ -1303,7 +1346,7 @@
 			}
 			else
 			{
-				this.curF = newF;
+				this.curF = objClone(this.inF);
 			}
 			
 
@@ -1315,7 +1358,7 @@
 
 			}else
 			{
-				this.curD = newD;
+				this.curD = objClone(this.inD);
 			}
 
 			if( E_bubble )
@@ -1324,13 +1367,32 @@
 			}
 			else
 			{
-				this.curE = newE;
+				this.curE = objClone(this.inE);
 			}
 			
-			this.curM = newM;
-			this.curW = newW;
+			this.curM = objClone(this.inM);
+			this.curW = objClone(this.inW);
+
+			//this.exeF.execute( this.curF, this.inD, this.inF, this.SPC );
+			this.exeE.execute( this.curE, this.inM, this.FB, this.SFA, this.PCL  );
+			this.exeM.execute( this.curM, this.inW, this.SPC, this.FB, this.SFA, this.PCL  );
+			this.exeW.execute( this.curW, this.SPC, this.FB, this.SFA  ); 
+			this.exeF.execute( this.curF, this.inD, this.inF, this.SPC );
+			this.exeD.execute( this.curD, this.inE, this.FB, this.SFA, this.PCL );
+
+			var debuginfo = this.curF.predPC.toString(16);
 
 			window.output += "Cycle_"+this.cycle+'\n';
+			$('#currentCycle').html("Cycle_"+this.cycle);
+			$('#currentCycle').animate({
+				opacity:1,
+				backgroundColor:'rgba(255,255,255,0.3)'
+				},
+				window.delay/2);
+			$('#currentCycle').animate({
+				opacity:0
+				},
+				window.delay/2);
 			window.output += "--------------------\n";
 			window.output += this.curF.toString();
 			window.output += this.curD.toString();
@@ -1338,7 +1400,16 @@
 			window.output += this.curM.toString();
 			window.output += this.curW.toString();
 			window.output += '\n';
+			$('#eax').html("0x"+window.VM.CPU.reg[0].toString(16));
+			$('#ecx').html("0x"+window.VM.CPU.reg[1].toString(16));
+			$('#edx').html("0x"+window.VM.CPU.reg[2].toString(16));
+			$('#ebx').html("0x"+window.VM.CPU.reg[3].toString(16));
+			$('#esp').html("0x"+window.VM.CPU.reg[4].toString(16));
+			$('#ebp').html("0x"+window.VM.CPU.reg[5].toString(16));
+			$('#esi').html("0x"+window.VM.CPU.reg[6].toString(16));
+			$('#edi').html("0x"+window.VM.CPU.reg[7].toString(16));
 			this.cycle++;
+			
 
 		},
 		run : function(){

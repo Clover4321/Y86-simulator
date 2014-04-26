@@ -24,7 +24,7 @@ var asmIns;
 
 			reader.readAsText(file);
 			reader.onload = function(f) {
-				dest.style.background = "white";
+				//dest.style.background = "white";
 				asmIns = this.result;
 				if (asmIns) {
 					window.VM.Memory.initialMemory();

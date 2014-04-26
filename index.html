@@ -8,193 +8,195 @@
 		<link rel="stylesheet" type="text/css" href="./css/bootstrap-theme.min.css">
 		<link rel="stylesheet" type="text/css" href="./css/common.css" />
 		<script type="text/javascript" src="./js/jquery-1.11.0.min.js"></script>
+		<script type="text/javascript" src="./js/jquery.animate-colors-min.js"></script>
 	</head>
 	<body>
 		<div class="topArea">
-			<div id="drop_area" class="col-lg-3">
+			<div id="drop_area" class="col-md-3">
 			Drag &amp; Drop a .yo into the page to load it :)
 			</div>
-			<div class="col-lg-6" id="currentStatus">status</div>
-			<div class="col-lg-3">
+			<div class="col-md-6" id="currentStatus">status</div>
+			<div class="col-md-3">
 				<form>
-					<label>frequency:</label>
+					frequency:
 					<input type="text" id="frequency" value="2">Hz
 				</form>
 			</div>
 		</div>
         <div class="regContent">
-        	<div class="row" id="controlBar">
-	        	<div class="col-lg-2"></div>
-				<div class="col-lg-2">
+        	<div class="row" id="controlBar1">
+	        	<div class="col-md-3"></div>
+				<div class="col-md-1">
 					<form>
-						<input type="button" value="last cycle" onclick="">
+						<img src="./img/last.png" id="lastCycle" onclick="window.VM.CPU.lastCycle()">
 					</form>
 				</div>
-				<div id="currentCycle" class="col-lg-4">current cycle</div>
-				<div class="col-lg-2">
+				<div id="currentCycle" class="col-md-4">current cycle</div>
+				<div class="col-md-1">
 					<form>
-						<input type="button" value="next cycle" onclick="">
+						<img src="./img/next.png" id="nextCycle" onclick="window.VM.CPU.nextCycle()">
 					</form>
 				</div>
-				<div class="col-lg-2">
-					<button id="run">run</button>
-					<button id="stop">stop</button>
+				<div class="col-md-3">
+					<image src="./img/start.png" id="run">
+					<image src="./img/pause.png" id="pause">
+					<image src="./img/reset.png" id="reset">
 				</div>
 			</div>
 			<div class="row" id="regTitle">
-				<div id="fetch" class="col-lg-2">Fetch</div>
-				<div id="decode" class="col-lg-2">Decode</div>
-				<div id="execute" class="col-lg-2">Execute</div>
-				<div id="memory" class="col-lg-2">Memory</div>
-				<div id="write" class="col-lg-2">Write</div>
-				<div id="register" class="col-lg-2">Register</div>
+				<div id="fetch" class="col-md-2">Fetch</div>
+				<div id="decode" class="col-md-2">Decode</div>
+				<div id="execute" class="col-md-2">Execute</div>
+				<div id="memory" class="col-md-2">Memory</div>
+				<div id="write" class="col-md-2">Write</div>
+				<div id="register" class="col-md-2">Register</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2">F_predPC</div>
-				<div class="col-lg-2">D_icode</div>
-				<div class="col-lg-2">E_icode</div>
-				<div class="col-lg-2">M_icode</div>
-				<div class="col-lg-2">W_icode</div>
-				<div class="col-lg-2">%esp</div>
+				<div class="col-md-2">F_predPC</div>
+				<div class="col-md-2">D_icode</div>
+				<div class="col-md-2">E_icode</div>
+				<div class="col-md-2">M_icode</div>
+				<div class="col-md-2">W_icode</div>
+				<div class="col-md-2">%esp</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2" id="F_predPC">0000</div>
-				<div class="col-lg-2" id="D_icode">0000</div>
-				<div class="col-lg-2" id="E_icode">0000</div>
-				<div class="col-lg-2" id="M_icode">0000</div>
-				<div class="col-lg-2" id="W_icode">0000</div>
-				<div class="col-lg-2" id="esp">0000</div>
+				<div class="col-md-2" id="F_predPC">0x0</div>
+				<div class="col-md-2" id="D_icode">0x0</div>
+				<div class="col-md-2" id="E_icode">0x0</div>
+				<div class="col-md-2" id="M_icode">0x0</div>
+				<div class="col-md-2" id="W_icode">0x0</div>
+				<div class="col-md-2" id="esp">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">D_ifun</div>
-				<div class="col-lg-2">E_ifun</div>
-				<div class="col-lg-2">M_Bch</div>
-				<div class="col-lg-2">W_ValE</div>
-				<div class="col-lg-2">%ebp</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">D_ifun</div>
+				<div class="col-md-2">E_ifun</div>
+				<div class="col-md-2">M_Bch</div>
+				<div class="col-md-2">W_ValE</div>
+				<div class="col-md-2">%ebp</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="D_ifun">0000</div>
-				<div class="col-lg-2" id="E_ifun">0000</div>
-				<div class="col-lg-2" id="M_Bch">0000</div>
-				<div class="col-lg-2" id="W_ValE">0000</div>
-				<div class="col-lg-2" id="ebp">0000</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="D_ifun">0x0</div>
+				<div class="col-md-2" id="E_ifun">0x0</div>
+				<div class="col-md-2" id="M_Bch">false</div>
+				<div class="col-md-2" id="W_ValE">0x0</div>
+				<div class="col-md-2" id="ebp">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">D-rA</div>
-				<div class="col-lg-2">E_ValC</div>
-				<div class="col-lg-2">M_ValE</div>
-				<div class="col-lg-2">M_ValM</div>
-				<div class="col-lg-2">%eax</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">D_rA</div>
+				<div class="col-md-2">E_ValC</div>
+				<div class="col-md-2">M_ValE</div>
+				<div class="col-md-2">M_ValM</div>
+				<div class="col-md-2">%eax</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="D_rA">0000</div>
-				<div class="col-lg-2" id="E_ValC">0000</div>
-				<div class="col-lg-2" id="M_ValE">0000</div>
-				<div class="col-lg-2" id="W_ValM">0000</div>
-				<div class="col-lg-2" id="eax">0000</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="D_rA">0x0</div>
+				<div class="col-md-2" id="E_ValC">0x0</div>
+				<div class="col-md-2" id="M_ValE">0x0</div>
+				<div class="col-md-2" id="W_ValM">0x0</div>
+				<div class="col-md-2" id="eax">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">D_rB</div>
-				<div class="col-lg-2">E_ValA</div>
-				<div class="col-lg-2">M_ValA</div>
-				<div class="col-lg-2">W_dstE</div>
-				<div class="col-lg-2">%ebx</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">D_rB</div>
+				<div class="col-md-2">E_ValA</div>
+				<div class="col-md-2">M_ValA</div>
+				<div class="col-md-2">W_dstE</div>
+				<div class="col-md-2">%ebx</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="D_rB">0000</div>
-				<div class="col-lg-2" id="E_ValA">0000</div>
-				<div class="col-lg-2" id="M_ValA">0000</div>
-				<div class="col-lg-2" id="W_dstE">0000</div>
-				<div class="col-lg-2" id="ebx">0000</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="D_rB">0x0</div>
+				<div class="col-md-2" id="E_ValA">0x0</div>
+				<div class="col-md-2" id="M_ValA">0x0</div>
+				<div class="col-md-2" id="W_dstE">0x0</div>
+				<div class="col-md-2" id="ebx">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">D_ValC</div>
-				<div class="col-lg-2">E_ValB</div>
-				<div class="col-lg-2">M_dstE</div>
-				<div class="col-lg-2">W_dstM</div>
-				<div class="col-lg-2">%ecx</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">D_ValC</div>
+				<div class="col-md-2">E_ValB</div>
+				<div class="col-md-2">M_dstE</div>
+				<div class="col-md-2">W_dstM</div>
+				<div class="col-md-2">%ecx</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="D_ValC">0000</div>
-				<div class="col-lg-2" id="E_ValB">0000</div>
-				<div class="col-lg-2" id="M_dstE">0000</div>
-				<div class="col-lg-2" id="W_dstM">0000</div>
-				<div class="col-lg-2" id="ecx">0000</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="D_ValC">0x0</div>
+				<div class="col-md-2" id="E_ValB">0x0</div>
+				<div class="col-md-2" id="M_dstE">0x0</div>
+				<div class="col-md-2" id="W_dstM">0x0</div>
+				<div class="col-md-2" id="ecx">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">D_ValP</div>
-				<div class="col-lg-2">E_dstE</div>
-				<div class="col-lg-2">M_dstM</div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">%edx</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">D_ValP</div>
+				<div class="col-md-2">E_dstE</div>
+				<div class="col-md-2">M_dstM</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">%edx</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="D_ValP">0000</div>
-				<div class="col-lg-2" id="E_dstE">0000</div>
-				<div class="col-lg-2" id="M_dstM">0000</div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2" id="edx">0000</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="D_ValP">0x0</div>
+				<div class="col-md-2" id="E_dstE">0x0</div>
+				<div class="col-md-2" id="M_dstM">0x0</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2" id="edx">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">E_dstM</div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">%esi</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">E_dstM</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">%esi</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-4"></div>
-				<div class="col-lg-2" id="E_dstM">0000</div>
-				<div class="col-lg-4"></div>
-				<div class="col-lg-2" id="esi">0000</div>
+				<div class="col-md-4"></div>
+				<div class="col-md-2" id="E_dstM">0x0</div>
+				<div class="col-md-4"></div>
+				<div class="col-md-2" id="esi">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">E_srcA</div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">%edi</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">E_srcA</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">%edi</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-4"></div>
-				<div class="col-lg-2" id="E_srcA">0000</div>
-				<div class="col-lg-4"></div>
-				<div class="col-lg-2" id="edi">0000</div>
+				<div class="col-md-4"></div>
+				<div class="col-md-2" id="E_srcA">0x0</div>
+				<div class="col-md-4"></div>
+				<div class="col-md-2" id="edi">0x0</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2">E_srcB</div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
-				<div class="col-lg-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2">E_srcB</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
+				<div class="col-md-2"></div>
 			</div>
 			<div class="row">
-				<div class="col-lg-4"></div>
-				<div class="col-lg-2" id="E_srcB">0000</div>
-				<div class="col-lg-6"></div>
+				<div class="col-md-4"></div>
+				<div class="col-md-2" id="E_srcB">0x0</div>
+				<div class="col-md-6"></div>
 			</div>
         </div>
-        <h1>Saving text</h1>
         <form id="text-options">
-            <label>Filename: <input type="text" class="filename" id="text-filename" placeholder="a plain document"/>.txt</label>
+            Filename: <input type="text" class="filename" id="text-filename" placeholder="asum"/>.txt
             <input type="submit" value="Save">
         </form>
 		<script type="text/javascript" src="./js/FileSaver.js"></script>
 		<script type="text/javascript" src="./js/memory.js"></script>
 		<script type="text/javascript" src="./js/YOLoader.js"></script>
+		<script type="text/javascript" src="./js/lastCycle.js"></script>
 		<script type="text/javascript" src="./js/kernel.js"></script>
 		<script type="text/javascript" src="./js/YOSaver.js"></script>
 		<script type="text/javascript">
@@ -205,8 +207,8 @@
 				freq = parseFloat(freq);
 				if(freq < 1e-8) alert("Invalid frequency!");
 				if(freq > 999) alert("Too fast!");
-				var delay = Math.round(1000 / freq);
-				start = setInterval("window.VM.CPU.nextCycle()",delay);
+				window.delay = Math.round(1000 / freq);
+				start = setInterval("window.VM.CPU.nextCycle()",window.delay);
 			}
 
 			$('#run').click(function(){
@@ -217,9 +219,14 @@
 					alert("Please load .yo file first!");
 			});
 
-			$('#stop').click(function(){
+			$('#pause').click(function(){
+				$('#currentCycle').css("opacity","1");
 				clearInterval(start);
-			})
+			});
+
+			$('#reset').click(function(){
+				window.VM.CPU.reset();
+			});
 		</script>
 	</body>
 </html>
