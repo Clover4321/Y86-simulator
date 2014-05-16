@@ -8,23 +8,8 @@ body {
 	font-family: "HelveticaNeue LT 35 Thin";
 	font-size: 20px;
 	color: white;
-	padding: 8px 30px 70px;
-}
-
-h1 {
-	font-family: "HelveticaNeue LT 35 Thin";
-	text-align: center center;
-	background-image: linear-gradient(135deg, #5fa4ee, #56e7ca);
-    background-color: #5fa4ee; 
-    -webkit-filter: blur(5px);
-	padding: 1em 0;
-    text-align: center;
-    color: white;
-	font-size: 30px;
-    text-transform: uppercase;
-    letter-spacing: 0.4em;
-    margin-left: 0.4em;
-	border-radius: 0.3em 0.3em;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 form {
@@ -67,6 +52,7 @@ form {
 .topArea{
 	height: 80px;
 	text-align: center;
+	padding-top: 20px;
 }
 
 #frequency{
@@ -82,6 +68,8 @@ input{
 	background: rgba(255,255,255,0);
 	color: white;
 }
+
+
 
 #run:hover {
 	background-color: rgba(0,0,0,0.2);

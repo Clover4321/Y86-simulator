@@ -1,0 +1,82 @@
+#fetch,
+#F_predPC{
+	background-color: rgba(52,73,94,0);
+}
+
+#F{
+	background-color: rgba(44,62,80,0);
+}
+
+#decode,
+#D_icode,
+#D_ifun,
+#D_rA,
+#D_rB,
+#D_ValC,
+#D_ValP{
+	background-color: rgba(26,188,156,0);
+}
+
+#D{
+	background-color: rgba(22,160,133,0);
+}
+
+#execute,
+#E_icode,
+#E_ifun,
+#E_ValC,
+#E_ValB,
+#E_ValA,
+#E_dstE,
+#E_dstM,
+#E_srcA,
+#E_srcB{
+	background-color: rgba(46,204,113,0);
+}
+
+#E{
+	background-color: rgba(39,174,96,0);
+}
+
+#memory,
+#M_icode,
+#M_Bch,
+#M_ValE,
+#M_ValA,
+#M_dstE,
+#M_dstM{
+	background-color: rgba(52,152,219,0);
+}
+
+#M{
+	background-color: rgba(41,128,185,0);
+}
+
+#write,
+#W_icode,
+#W_ValE,
+#W_ValM,
+#W_dstE,
+#W_dstM{
+	background-color: rgba(155,89,182,0);
+}
+
+#W{
+	background-color: rgba(142,68,173,0);
+}
+
+#register,
+#esp,
+#ebp,
+#eax,
+#ebx,
+#ecx,
+#edx,
+#esi,
+#edi{
+	background-color: rgba(231,76,60,0);
+}
+
+#R{
+	background-color: rgba(192,57,43,0);
+}

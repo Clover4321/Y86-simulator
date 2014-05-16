@@ -5,7 +5,6 @@
 		<title>Y86 Simulator</title>
 		
 		<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
-		<link rel="stylesheet" type="text/css" href="./css/bootstrap-theme.min.css">
 		<link rel="stylesheet" type="text/css" href="./css/common.css" />
 		<script type="text/javascript" src="./js/jquery-1.11.0.min.js"></script>
 		<script type="text/javascript" src="./js/jquery.animate-colors-min.js"></script>
@@ -15,7 +14,7 @@
 			<div id="drop_area" class="col-md-3">
 			Drag &amp; Drop a .yo into the page to load it :)
 			</div>
-			<div class="col-md-6" id="currentStatus">status</div>
+			<div class="col-md-6" id="currentStatus">STATUS</div>
 			<div class="col-md-3">
 				<form>
 					frequency:
@@ -31,10 +30,10 @@
 						<img src="./img/last.png" id="lastCycle" onclick="window.VM.CPU.lastCycle()">
 					</form>
 				</div>
-				<div id="currentCycle" class="col-md-4">current cycle</div>
+				<div id="currentCycle" class="col-md-4">Current Cycle</div>
 				<div class="col-md-1">
 					<form>
-						<img src="./img/next.png" id="nextCycle" onclick="window.VM.CPU.nextCycle()">
+						<img src="./img/next.png" id="nextCycle" onclick="window.VM.CPU.nextCycle();">
 					</form>
 				</div>
 				<div class="col-md-3">
@@ -52,12 +51,12 @@
 				<div id="register" class="col-md-2">Register</div>
 			</div>
 			<div class="row">
-				<div class="col-md-2">F_predPC</div>
-				<div class="col-md-2">D_icode</div>
-				<div class="col-md-2">E_icode</div>
-				<div class="col-md-2">M_icode</div>
-				<div class="col-md-2">W_icode</div>
-				<div class="col-md-2">%esp</div>
+				<div class="col-md-2" id="F">F_predPC</div>
+				<div class="col-md-2" id="D">D_icode</div>
+				<div class="col-md-2" id="E">E_icode</div>
+				<div class="col-md-2" id="M">M_icode</div>
+				<div class="col-md-2" id="W">W_icode</div>
+				<div class="col-md-2" id="R">%esp</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2" id="F_predPC">0x0</div>
@@ -69,11 +68,11 @@
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
-				<div class="col-md-2">D_ifun</div>
-				<div class="col-md-2">E_ifun</div>
-				<div class="col-md-2">M_Bch</div>
-				<div class="col-md-2">W_ValE</div>
-				<div class="col-md-2">%ebp</div>
+				<div class="col-md-2" id="D">D_ifun</div>
+				<div class="col-md-2" id="E">E_ifun</div>
+				<div class="col-md-2" id="M">M_Bch</div>
+				<div class="col-md-2" id="W">W_ValE</div>
+				<div class="col-md-2" id="R">%ebp</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -85,11 +84,11 @@
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
-				<div class="col-md-2">D_rA</div>
-				<div class="col-md-2">E_ValC</div>
-				<div class="col-md-2">M_ValE</div>
-				<div class="col-md-2">M_ValM</div>
-				<div class="col-md-2">%eax</div>
+				<div class="col-md-2" id="D">D_rA</div>
+				<div class="col-md-2" id="E">E_ValC</div>
+				<div class="col-md-2" id="M">M_ValE</div>
+				<div class="col-md-2" id="W">W_ValM</div>
+				<div class="col-md-2" id="R">%eax</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -101,11 +100,11 @@
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
-				<div class="col-md-2">D_rB</div>
-				<div class="col-md-2">E_ValA</div>
-				<div class="col-md-2">M_ValA</div>
-				<div class="col-md-2">W_dstE</div>
-				<div class="col-md-2">%ebx</div>
+				<div class="col-md-2" id="D">D_rB</div>
+				<div class="col-md-2" id="E">E_ValA</div>
+				<div class="col-md-2" id="M">M_ValA</div>
+				<div class="col-md-2" id="W">W_dstE</div>
+				<div class="col-md-2" id="R">%ebx</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -117,11 +116,11 @@
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
-				<div class="col-md-2">D_ValC</div>
-				<div class="col-md-2">E_ValB</div>
-				<div class="col-md-2">M_dstE</div>
-				<div class="col-md-2">W_dstM</div>
-				<div class="col-md-2">%ecx</div>
+				<div class="col-md-2" id="D">D_ValC</div>
+				<div class="col-md-2" id="E">E_ValB</div>
+				<div class="col-md-2" id="M">M_dstE</div>
+				<div class="col-md-2" id="W">W_dstM</div>
+				<div class="col-md-2" id="R">%ecx</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -133,11 +132,11 @@
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
-				<div class="col-md-2">D_ValP</div>
-				<div class="col-md-2">E_dstE</div>
-				<div class="col-md-2">M_dstM</div>
+				<div class="col-md-2" id="D">D_ValP</div>
+				<div class="col-md-2" id="E">E_dstE</div>
+				<div class="col-md-2" id="M">M_dstM</div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">%edx</div>
+				<div class="col-md-2" id="R">%edx</div>
 			</div>
 			<div class="row">
 				<div class="col-md-2"></div>
@@ -150,10 +149,10 @@
 			<div class="row">
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">E_dstM</div>
+				<div class="col-md-2" id="E">E_dstM</div>
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">%esi</div>
+				<div class="col-md-2" id="R">%esi</div>
 			</div>
 			<div class="row">
 				<div class="col-md-4"></div>
@@ -164,10 +163,10 @@
 			<div class="row">
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">E_srcA</div>
+				<div class="col-md-2" id="E">E_srcA</div>
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">%edi</div>
+				<div class="col-md-2" id="R">%edi</div>
 			</div>
 			<div class="row">
 				<div class="col-md-4"></div>
@@ -178,7 +177,7 @@
 			<div class="row">
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
-				<div class="col-md-2">E_srcB</div>
+				<div class="col-md-2" id="E">E_srcB</div>
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
 				<div class="col-md-2"></div>
@@ -226,6 +225,17 @@
 
 			$('#reset').click(function(){
 				window.VM.CPU.reset();
+			});
+
+			$('div.col-md-2').change(function(){
+				$(this).animate({
+				backgroundColor:'rgba(255,255,255,0.3)'
+				},
+				window.delay/2);
+				$(this).animate({
+				backgroundColor:'rgba(255,255,255,0)'
+				},
+				window.delay/2);
 			});
 		</script>
 	</body>
