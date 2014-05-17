@@ -1,6 +1,8 @@
 (function () {
 	
 	window.output = "";
+	window.CPI_cycle = new Array();
+	window.CPI_value = new Array();
 
 	//指令宏定义
 	var INOP = 0;
@@ -43,6 +45,17 @@
 	var RZF = 0xC;
 	var RSF = 0xD;
 	var ROF = 0xE;
+
+	//CPI:Instruction Frequency
+	var count_total_ins=0
+	var count_mrmovl=0;
+	var count_popl=0;
+	var count_cond_branch=0;
+	var count_ret=0;
+
+	//CPI:Condition Frequency
+	var count_loan_use=0;
+	var count_mispredict=0;
 
 	//Fetch寄存器
 	function positionF( )
@@ -339,6 +352,7 @@
 	{
 		execute : function( F, D, newF, SPC )
 		{
+			count_total_ins++;
 			D.set_state(F.state);
 			newF.set_state(F.state);
 			SPC.set_F_predPC( F.predPC );
@@ -367,6 +381,7 @@
 					//D.set_rA( Number("0x"+B2[0]) );
 					//D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+1;
+					count_ret++;
 					break;
 
 				case IRRMOVL:
@@ -388,6 +403,7 @@
 					D.set_rA( Number("0x"+B2[0]) );
 					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+2;
+					count_popl++;
 					break;
 
 				case IIRMOVL:
@@ -410,6 +426,7 @@
 					D.set_rA( Number("0x"+B2[0]) );
 					D.set_rB( Number("0x"+B2[1]) );
 					nextPC = f_pc+6;
+					count_mrmovl++;
 					break;
 
 				case IJXX:
@@ -420,6 +437,7 @@
 					D.set_rA(RNONE);
 					D.set_rB(RNONE);
 					nextPC = f_pc+5;
+					count_cond_branch++;
 					break;
 				case ICALL:
 					var nor = LittleEnd2Normal( B4 );
@@ -1170,12 +1188,17 @@
 		},
 		E_bubble : function()
 		{
+			if(this.E_icode ==  IJXX && !this.e_Bch) count_mispredict++;
+			if(( this.E_icode == IMRMOVL || this.E_icode == IPOPL ) &&
+					( this.E_dstM ==  this.d_srcA || this.E_dstM == this.d_srcB ))  count_loan_use++;
 			return ( this.E_icode ==  IJXX && !this.e_Bch ) ||
 					( this.E_icode == IMRMOVL || this.E_icode == IPOPL ) &&
 					( this.E_dstM ==  this.d_srcA || this.E_dstM == this.d_srcB );
 		},
 		D_bubble : function()
 		{
+			if(this.E_icode == IJXX && !this.e_Bch) count_mispredict++;
+			if(IRET == this.D_icode || IRET == this.E_icode || IRET == this.M_icode) count_ret++;
 			return ( this.E_icode == IJXX && !this.e_Bch ) || 
 					( IRET == this.D_icode || IRET == this.E_icode || IRET == this.M_icode );
 		},
@@ -1231,6 +1254,14 @@
 			result[i] = obj[i];
 		return result;
 	}
+
+	
+    /*var a={1:"a",2:"b",3:"c"};
+    var b=objClone(a);
+    a["1"]="z";*/
+    //记录之前的寄存器状态
+        
+
 
 
 	//实现Y86模拟器
@@ -1330,7 +1361,6 @@
 		},
 		nextCycle : function()
 		{
-
 			if( this.curW.state == SHLT )
 			{
 				return;
@@ -1372,7 +1402,26 @@
 			
 			this.curM = objClone(this.inM);
 			this.curW = objClone(this.inW);
+			
+			var temp=clone(this.inF);
 
+			if(F_record.length==this.cycle) 
+		    {
+		    	if(record_flag[this.cycle]==undefined)
+			    {
+			    	status.recordF(clone(this.curF));
+		            status.recordD(clone(this.curD));
+		            status.recordE(clone(this.curE));
+		            status.recordM(clone(this.curM));
+		            status.recordW(clone(this.curW));
+		            status.recordinF(temp);
+		            status.recordinD(clone(this.inD));
+		            status.recordinE(clone(this.inE));
+		            status.recordinM(clone(this.inM));
+		            status.recordinW(clone(this.inW));
+		            record_flag[this.cycle]=1;
+		        }
+		    }
 			//this.exeF.execute( this.curF, this.inD, this.inF, this.SPC );
 			this.exeE.execute( this.curE, this.inM, this.FB, this.SFA, this.PCL  );
 			this.exeM.execute( this.curM, this.inW, this.SPC, this.FB, this.SFA, this.PCL  );
@@ -1380,10 +1429,29 @@
 			this.exeF.execute( this.curF, this.inD, this.inF, this.SPC );
 			this.exeD.execute( this.curD, this.inE, this.FB, this.SFA, this.PCL );
 
+            if(SPC_record.length==this.cycle)
+            {
+            	    status.recordSPC(clone(this.SPC));
+		            status.recordFB(clone(this.FB));
+		            status.recordSFA(clone(this.SFA));
+		            status.recordPCL(clone(this.PCL));
+            }
 			var debuginfo = this.curF.predPC.toString(16);
 
+			var CPIValue = calculate_CPI();
+			window.CPI_cycle[this.cycle] = this.cycle;
+			window.CPI_value[this.cycle] = CPIValue;
+            $("#Show_CPI").html(CPIValue);
+			$("#esp").html("0x"+this.reg[4].toString(16));
+			$("#ebp").html("0x"+this.reg[5].toString(16));
+			$("#eax").html("0x"+this.reg[0].toString(16));
+			$("#ebx").html("0x"+this.reg[3].toString(16));
+			$("#ecx").html("0x"+this.reg[1].toString(16));
+			$("#edx").html("0x"+this.reg[2].toString(16));
+			$("#esi").html("0x"+this.reg[6].toString(16));
+			$("#edi").html("0x"+this.reg[7].toString(16));
 			window.output += "Cycle_"+this.cycle+'\n';
-			$('#currentCycle').html("Cycle_"+this.cycle);
+			$('#currentCycle').html("Cycle "+this.cycle);
 			$('#currentCycle').animate({
 				opacity:1,
 				backgroundColor:'rgba(255,255,255,0.3)'
@@ -1400,18 +1468,70 @@
 			window.output += this.curM.toString();
 			window.output += this.curW.toString();
 			window.output += '\n';
-			$('#eax').html("0x"+window.VM.CPU.reg[0].toString(16));
-			$('#ecx').html("0x"+window.VM.CPU.reg[1].toString(16));
-			$('#edx').html("0x"+window.VM.CPU.reg[2].toString(16));
-			$('#ebx').html("0x"+window.VM.CPU.reg[3].toString(16));
-			$('#esp').html("0x"+window.VM.CPU.reg[4].toString(16));
-			$('#ebp').html("0x"+window.VM.CPU.reg[5].toString(16));
-			$('#esi').html("0x"+window.VM.CPU.reg[6].toString(16));
-			$('#edi').html("0x"+window.VM.CPU.reg[7].toString(16));
 			this.cycle++;
-			
+
 
 		},
+		reset:function()
+        {
+        	$('#currentCycle').html("Cycle 0");
+        	window.VM.CPU.initialize();
+        	this.cycle=0;
+        	count_total_ins=0
+	        count_mrmovl=0;
+	        count_popl=0;
+	        count_cond_branch=0;
+	        count_ret=0;
+	        count_loan_use=0;
+	        count_mispredict=0;
+	        $('#Show_CPI').html(calculate_CPI());
+	        $("#esp").html("0x" + this.reg[4].toString(16));
+			$("#ebp").html("0x" + this.reg[5].toString(16));
+			$("#eax").html("0x" + this.reg[0].toString(16));
+			$("#ebx").html("0x" + this.reg[3].toString(16));
+			$("#ecx").html("0x" + this.reg[1].toString(16));
+			$("#edx").html("0x" + this.reg[2].toString(16));
+			$("#esi").html("0x" + this.reg[6].toString(16));
+			$("#edi").html("0x" + this.reg[7].toString(16));
+        	window.output += this.curF.toString();
+			window.output += this.curD.toString();
+			window.output += this.curE.toString();
+			window.output += this.curM.toString();
+			window.output += this.curW.toString();
+        },
+		lastCycle : function()
+        {
+	        if(this.cycle>0)
+	        {
+	        	this.cycle--;
+	        	if(this.cycle==0)  this.reset();
+	        	else
+	        	{
+        	    $('#currentCycle').html("Cycle "+(this.cycle-1));
+        	    this.curF=clone(F_record[this.cycle-1]);
+		        this.curD=clone(D_record[this.cycle-1]);
+		        this.curE=clone(E_record[this.cycle-1]);
+		        this.curM=clone(M_record[this.cycle-1]);
+		        this.curW=clone(W_record[this.cycle-1]);
+		        this.inF=clone(inF_record[this.cycle]);
+		        this.inD=clone(inD_record[this.cycle]);
+		        this.inE=clone(inE_record[this.cycle]);
+		        this.inM=clone(inM_record[this.cycle]);
+		        this.inW=clone(inW_record[this.cycle]);
+		        this.SPC=clone(SPC_record[this.cycle]);
+		        this.FB=clone(FB_record[this.cycle]);
+		        this.SFA=clone(SFA_record[this.cycle]);
+		        this.PCL=clone(PCL_record[this.cycle]);
+			    window.output += "--------------------\n";
+			    window.output += this.curF.toString();
+			    window.output += this.curD.toString();
+			    window.output += this.curE.toString();
+			    window.output += this.curM.toString();
+			    window.output += this.curW.toString();
+			    window.output += '\n';
+			    }
+		    }
+        }, 
 		run : function(){
 			alert("run!");
 			function timedCount()
@@ -1420,8 +1540,286 @@
 				t = setTimeout("timedCount()",1000);
 			}
 
-		}
+		},
+		show_reg:function()
+		{
+	    
+		    $("#esp").html(this.reg[4]);
+	        $("#ebp").html(this.reg[5]);
+	        $("#eax").html(this.reg[0]);
+	        $("#ebx").html(this.reg[3]);
+	        $("#ecx").html(this.reg[1]);
+	        $("#edx").html(this.reg[2]);
+	        $("#esi").html(this.reg[6]);
+	        $("#edi").html(this.reg[7]);
+	    },
+	    select_reg:function(x)
+	    {
+	    	var sel;
+	    	switch(x)
+	    	{
+	    		case"%eax":sel=0;break;
+    	        case"%ecx":sel=1;break;
+    	        case"%edx":sel=2;break;
+    	        case"%ebx":sel=3;break;
+    	        case"%esp":sel=4;break;
+    	        case"%ebp":sel=5;break;
+    	        case"%esi":sel=6;break;
+    	        case"%edi":sel=7;break;
+    	    }
+    	    return sel;
+	    },
+		Y86compiler:function()
+        {
+    	    var dir=prompt("Please enter a Y86 instruction");
+    	    var dir_trimmed=$.trim(dir);
+    	    var action,R1="",R2,Im;
+    	    var i,j,k,temp;
+    	    //拆分指令
+    	    for(i=0;i<dir_trimmed.length;i++)
+    	    {
+    	    	if(dir_trimmed[i]==' ')
+    	    	{
+    	    		action=dir_trimmed.substring(0,i);
+    	    		break;
+    	    	}
+    	    }
+    	    for(j=i+1,k=j;j<dir_trimmed.length;j++)
+    	    {
+    	    	if(dir_trimmed[j]==' ') {k++;continue;}
+    	    	else
+    	    	{
+    	    		if(dir_trimmed[j]!=','&&dir_trimmed[j]!=' ')
+    	    		{
+    	    			R1+=dir_trimmed[j];
+    	    		}
+    	    		if(dir_trimmed[j]==',') break;
+    	    	}
+    	    }
+    	    for(k=j+1,temp=k;k<dir_trimmed.length;k++)
+    	    {
+    	    	if(dir_trimmed[k]==' ') temp++; 
+    	    }
+    	    R2=dir_trimmed.substring(temp,dir_trimmed.length);
+
+            //处理加法
+    	    if(action=="addl")
+    	    {
+    	    	var select_reg1,select_reg2;
+    	    	select_reg2=this.select_reg(R2);
+    	    	if(isNaN(R1))
+    	    	{
+    	    		select_reg1=this.select_reg(R1);
+    	    		this.reg[select_reg2]+=this.reg[select_reg1];
+    	    	}
+    	    	else
+    	    	{
+    	    		Im=parseInt(R1,10);
+    	    		this.reg[select_reg2]+=Im;
+    	    	}
+    	    	this.show_reg();
+    	    }
+
+    	    //处理减法
+    	    if(action=="subl")
+    	    {
+    	    	var select_reg1,select_reg2;
+    	    	select_reg2=this.select_reg(R2);
+    	    	if(isNaN(R1))
+    	    	{
+    	    		select_reg1=this.select_reg(R1);
+    	    		this.reg[select_reg2]-=this.reg[select_reg1];
+    	    	}
+    	    	else
+    	    	{
+    	    		Im=parseInt(R1,10);
+    	    		this.reg[select_reg2]-=Im;
+    	    	}
+    	    	this.show_reg();
+    	    }
+
+    	    //处理乘法
+    	    if(action=="imull")
+    	    {
+    	    	var select_reg1,select_reg2;
+    	    	select_reg2=this.select_reg(R2);
+    	    	if(isNaN(R1))
+    	    	{
+    	    		select_reg1=this.select_reg(R1);
+    	    		this.reg[select_reg2]*=this.reg[select_reg1];
+    	    	}
+    	    	else
+    	    	{
+    	    		Im=parseInt(R1,10);
+    	    		this.reg[select_reg2]*=Im;
+    	    	}
+    	    	this.show_reg();
+    	    }
+
+    	    //处理除法
+    	    if(action=="divl")
+    	    {
+    	    	var select_reg1,select_reg2;
+    	    	select_reg2=this.select_reg(R2);
+    	    	if(isNaN(R1))
+    	    	{
+    	    		select_reg1=this.select_reg(R1);
+    	    		this.reg[select_reg2]/=this.reg[select_reg1];
+    	    	}
+    	    	else
+    	    	{
+    	    		Im=parseInt(R1,10);
+    	    		this.reg[select_reg2]/=Im;
+    	    	}
+    	    	this.show_reg();
+    	    }
+
+    	    //处理移动
+    	    if(action=="movl")
+    	    {
+    	    	var select_reg1,select_reg2;
+    	    	select_reg2=this.select_reg(R2);
+    	    	if(isNaN(R1))
+    	    	{
+    	    		select_reg1=this.select_reg(R1);
+    	    		this.reg[select_reg2]=this.reg[select_reg1];
+    	    	}
+    	    	else
+    	    	{
+    	    		Im=parseInt(R1,10);
+    	    		this.reg[select_reg2]=Im;
+    	    	}
+    	    	this.show_reg();
+    	    }
+        } 
 	}
+
+	function calculate_CPI()
+	{
+		var ins_freq={
+			load_use:count_total_ins==0?0:(count_mrmovl+count_popl)/count_total_ins,
+			mis:count_total_ins==0?0:count_cond_branch/count_total_ins,
+			ret:count_total_ins==0?0:count_ret/count_total_ins
+		};
+
+		var cond_freq={
+			load_use:(count_mrmovl+count_popl)==0?0:count_loan_use/(count_mrmovl+count_popl),
+			mis:count_cond_branch==0?0:count_mispredict/count_cond_branch,
+			ret:1
+		};
+
+		var lp=ins_freq["load_use"]*cond_freq["load_use"];
+		var mp=ins_freq["mis"]*cond_freq["mis"];
+		var rp=3*ins_freq["ret"]*cond_freq["ret"];
+
+		var CPI=1.0+lp+mp+rp;
+		return CPI.toFixed(3);
+	}
+
+	function clone(obj) {
+      var o;
+      if (typeof obj == "object") {
+          if (obj === null) {
+              o = null;
+          } else {
+              if (obj instanceof Array) {
+                  o = [];
+                  for (var i = 0, len = obj.length; i < len; i++) {
+                     o.push(clone(obj[i]));
+                 }
+             } else {
+                 o = {};
+                 for (var j in obj) {
+                     o[j] = clone(obj[j]);
+                 }
+             }
+         }
+     } else {
+         o = obj;
+     }
+     return o;
+    }
+
+        var F_record=new Array();
+		var D_record=new Array();
+		var E_record=new Array();
+		var M_record=new Array();
+		var W_record=new Array();
+		var inF_record=new Array();
+		var inD_record=new Array();
+		var inE_record=new Array();
+		var inM_record=new Array();
+		var inW_record=new Array();
+		var SPC_record=new Array();
+		var FB_record=new Array();
+		var SFA_record=new Array();
+		var PCL_record=new Array();
+		var record_flag=new Array();
+
+	function record()
+		{
+
+		}
+		record.prototype={
+
+			recordF : function(F)
+	        {
+                F_record.push(clone(F));
+	        },
+	        recordD:function(D)
+	       {
+                D_record.push(clone(D));
+	       },
+	        recordE:function(E)
+	       {
+                E_record.push(clone(E));
+	       },
+	        recordM:function(M)
+	       {
+                M_record.push(clone(M));
+	       },
+	        recordW:function(W)
+	       {
+                W_record.push(clone(W));
+       	   },
+       	   recordinF:function(inF)
+	        {
+                inF_record.push(clone(inF));
+	        },
+	        recordinD:function(inD)
+	       {
+                inD_record.push(clone(inD));
+	       },
+	        recordinE:function(inE)
+	       {
+                inE_record.push(clone(inE));
+	       },
+	        recordinM:function(inM)
+	       {
+                inM_record.push(clone(inM));
+	       },
+	        recordinW:function(inW)
+	       {
+                inW_record.push(clone(inW));
+       	   },
+       	   recordSPC:function(SPC)
+       	   {
+       	   	  SPC_record.push(clone(SPC));
+       	   },
+       	   recordFB:function(FB)
+       	   {
+       	   	  FB_record.push(clone(FB));
+       	   },
+       	   recordSFA:function(SFA)
+       	   {
+       	   	  SFA_record.push(clone(SFA));
+       	   },
+       	   recordPCL:function(PCL)
+       	   {
+       	   	  PCL_record.push(clone(PCL));
+       	   }
+		}
+    var status=new record();
 
 	window.VM.CPU = new Y86Simulator();
 	window.VM.CPU.buildMemory();

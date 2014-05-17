@@ -17,6 +17,11 @@ form {
 	margin-top: 5px;
 }
 
+.page {
+	height: 768px;
+	display: block;
+}
+
 .filename {
 	text-align: right;
 }
@@ -32,12 +37,12 @@ form {
 }
 
 #currentCycle{
-	height: 40px;
-	font-size: 30px;
+	padding-top: 15px;
+	font-size: 24px;
 }
 
 #currentStatus{
-	font-size: 30px;
+	font-size: 32px;
 }
 
 .regContent{
@@ -69,7 +74,9 @@ input{
 	color: white;
 }
 
-
+#CPIChart {
+	margin-top: 150px;
+}
 
 #run:hover {
 	background-color: rgba(0,0,0,0.2);
