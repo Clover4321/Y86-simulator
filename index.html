@@ -212,6 +212,7 @@
 			var start;
 			window.delay = 0;
 			var page = 1;
+			var startFlag = 0;
 
 			function startTimer(freq){
 				freq = parseFloat(freq);
@@ -222,7 +223,11 @@
 			}
 
 			$('#run').click(function(){
+				if (startFlag == 1) {
+					return;
+				};
 				if (window.asmIns) {
+					startFlag = 1;
 					startTimer($('#frequency').val());
 				}
 				else
@@ -230,6 +235,7 @@
 			});
 
 			$('#pause').click(function(){
+				startFlag = 0;
 				$('#currentCycle').animate({
 					backgroundColor:'rgba(255,255,255,0)',
 					opacity:1
@@ -239,6 +245,7 @@
 			});
 
 			$('#reset').click(function(){
+				startFlag = 0;
 				$('#currentCycle').animate({
 					backgroundColor:'rgba(255,255,255,0)',
 					opacity:1
@@ -254,6 +261,7 @@
 				$('html body').animate({
 					scrollTop: $('#page' + page.toString()).offset().top
 				}, 1000);
+				-- page;
 				var data = {
 				labels : window.CPI_cycle,
 				datasets : [

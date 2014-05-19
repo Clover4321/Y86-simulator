@@ -1438,20 +1438,13 @@
             }
 			var debuginfo = this.curF.predPC.toString(16);
 
-			var CPIValue = calculate_CPI();
+			var cpiValue = calculate_CPI().toFixed(3);
 			window.CPI_cycle[this.cycle] = this.cycle;
-			window.CPI_value[this.cycle] = CPIValue;
-            $("#Show_CPI").html(CPIValue);
-			$("#esp").html("0x"+this.reg[4].toString(16));
-			$("#ebp").html("0x"+this.reg[5].toString(16));
-			$("#eax").html("0x"+this.reg[0].toString(16));
-			$("#ebx").html("0x"+this.reg[3].toString(16));
-			$("#ecx").html("0x"+this.reg[1].toString(16));
-			$("#edx").html("0x"+this.reg[2].toString(16));
-			$("#esi").html("0x"+this.reg[6].toString(16));
-			$("#edi").html("0x"+this.reg[7].toString(16));
-			window.output += "Cycle_"+this.cycle+'\n';
-			$('#currentCycle').html("Cycle "+this.cycle);
+			window.CPI_value[this.cycle] = cpiValue;
+            $("#Show_CPI").html(cpiValue);
+			this.show_reg();
+			window.output += "Cycle "+this.cycle+'\n';
+
 			$('#currentCycle').animate({
 				opacity:1,
 				backgroundColor:'rgba(255,255,255,0.3)'
@@ -1461,6 +1454,8 @@
 				opacity:0
 				},
 				window.delay/2);
+
+			$('#currentCycle').html("Cycle "+this.cycle);
 			window.output += "--------------------\n";
 			window.output += this.curF.toString();
 			window.output += this.curD.toString();
@@ -1484,15 +1479,8 @@
 	        count_ret=0;
 	        count_loan_use=0;
 	        count_mispredict=0;
-	        $('#Show_CPI').html(calculate_CPI());
-	        $("#esp").html("0x" + this.reg[4].toString(16));
-			$("#ebp").html("0x" + this.reg[5].toString(16));
-			$("#eax").html("0x" + this.reg[0].toString(16));
-			$("#ebx").html("0x" + this.reg[3].toString(16));
-			$("#ecx").html("0x" + this.reg[1].toString(16));
-			$("#edx").html("0x" + this.reg[2].toString(16));
-			$("#esi").html("0x" + this.reg[6].toString(16));
-			$("#edi").html("0x" + this.reg[7].toString(16));
+	        $('#Show_CPI').html(calculate_CPI().toFixed(3));
+	        this.show_reg();
         	window.output += this.curF.toString();
 			window.output += this.curD.toString();
 			window.output += this.curE.toString();
@@ -1507,7 +1495,7 @@
 	        	if(this.cycle==0)  this.reset();
 	        	else
 	        	{
-        	    $('#currentCycle').html("Cycle "+(this.cycle-1));
+        	    $('#currentCycle').html("Cycle_"+(this.cycle-1));
         	    this.curF=clone(F_record[this.cycle-1]);
 		        this.curD=clone(D_record[this.cycle-1]);
 		        this.curE=clone(E_record[this.cycle-1]);
@@ -1544,14 +1532,14 @@
 		show_reg:function()
 		{
 	    
-		    $("#esp").html(this.reg[4]);
-	        $("#ebp").html(this.reg[5]);
-	        $("#eax").html(this.reg[0]);
-	        $("#ebx").html(this.reg[3]);
-	        $("#ecx").html(this.reg[1]);
-	        $("#edx").html(this.reg[2]);
-	        $("#esi").html(this.reg[6]);
-	        $("#edi").html(this.reg[7]);
+		    $("#esp").html("0x"+this.reg[4].toString(16));
+	        $("#ebp").html("0x"+this.reg[5].toString(16));
+	        $("#eax").html("0x"+this.reg[0].toString(16));
+	        $("#ebx").html("0x"+this.reg[3].toString(16));
+	        $("#ecx").html("0x"+this.reg[1].toString(16));
+	        $("#edx").html("0x"+this.reg[2].toString(16));
+	        $("#esi").html("0x"+this.reg[6].toString(16));
+	        $("#edi").html("0x"+this.reg[7].toString(16));
 	    },
 	    select_reg:function(x)
 	    {
@@ -1601,97 +1589,90 @@
     	    	if(dir_trimmed[k]==' ') temp++; 
     	    }
     	    R2=dir_trimmed.substring(temp,dir_trimmed.length);
+            
+            //OPl rA rB (其中rA可为寄存器，也可为立即数)
+            if(action=="addl"||action=="subl"||action=="andl"||action=="xorl")
+            {
+            	var select_reg1,select_reg2,a,b,t;
+    	        select_reg2=this.select_reg(R2);
+    	        if(isNaN(R1))  
+    	        {
+    	    	    select_reg1=this.select_reg(R1);
+    	    	    a=this.reg[select_reg1],b=this.reg[select_reg2];    	    	
+    	        }
+    	        else
+    	        {
+    	            Im=parseInt(R1,10);
+    	    	    a=Im,b=this.reg[select_reg2];
+    	        }
+                switch(action)
+                {
+            	    case "addl":t=a+b;break;
+            	    case "subl":t=b-a;break;
+            	    case "andl":t=a&b;break;
+            	    case "xorl":t=a^b;break;
+                }
+    	        this.reg[select_reg2]=t;
+    	        if(t<0) this.reg[RSF]=true;
+                if(t==0) this.reg[RZF]=true;
+                if((a<0==b<0)&&(t<0!=a<0)) this.reg[ROF]=true;
+            }
 
-            //处理加法
-    	    if(action=="addl")
-    	    {
-    	    	var select_reg1,select_reg2;
-    	    	select_reg2=this.select_reg(R2);
-    	    	if(isNaN(R1))
-    	    	{
-    	    		select_reg1=this.select_reg(R1);
-    	    		this.reg[select_reg2]+=this.reg[select_reg1];
-    	    	}
-    	    	else
-    	    	{
-    	    		Im=parseInt(R1,10);
-    	    		this.reg[select_reg2]+=Im;
-    	    	}
-    	    	this.show_reg();
-    	    }
-
-    	    //处理减法
-    	    if(action=="subl")
-    	    {
-    	    	var select_reg1,select_reg2;
-    	    	select_reg2=this.select_reg(R2);
-    	    	if(isNaN(R1))
-    	    	{
-    	    		select_reg1=this.select_reg(R1);
-    	    		this.reg[select_reg2]-=this.reg[select_reg1];
-    	    	}
-    	    	else
-    	    	{
-    	    		Im=parseInt(R1,10);
-    	    		this.reg[select_reg2]-=Im;
-    	    	}
-    	    	this.show_reg();
-    	    }
-
-    	    //处理乘法
-    	    if(action=="imull")
-    	    {
-    	    	var select_reg1,select_reg2;
-    	    	select_reg2=this.select_reg(R2);
-    	    	if(isNaN(R1))
-    	    	{
-    	    		select_reg1=this.select_reg(R1);
-    	    		this.reg[select_reg2]*=this.reg[select_reg1];
-    	    	}
-    	    	else
-    	    	{
-    	    		Im=parseInt(R1,10);
-    	    		this.reg[select_reg2]*=Im;
-    	    	}
-    	    	this.show_reg();
-    	    }
-
-    	    //处理除法
-    	    if(action=="divl")
-    	    {
-    	    	var select_reg1,select_reg2;
-    	    	select_reg2=this.select_reg(R2);
-    	    	if(isNaN(R1))
-    	    	{
-    	    		select_reg1=this.select_reg(R1);
-    	    		this.reg[select_reg2]/=this.reg[select_reg1];
-    	    	}
-    	    	else
-    	    	{
-    	    		Im=parseInt(R1,10);
-    	    		this.reg[select_reg2]/=Im;
-    	    	}
-    	    	this.show_reg();
-    	    }
-
-    	    //处理移动
-    	    if(action=="movl")
-    	    {
-    	    	var select_reg1,select_reg2;
-    	    	select_reg2=this.select_reg(R2);
-    	    	if(isNaN(R1))
-    	    	{
-    	    		select_reg1=this.select_reg(R1);
-    	    		this.reg[select_reg2]=this.reg[select_reg1];
-    	    	}
-    	    	else
-    	    	{
-    	    		Im=parseInt(R1,10);
-    	    		this.reg[select_reg2]=Im;
-    	    	}
-    	    	this.show_reg();
-    	    }
-        } 
+            //处理movl
+            if(action=="rrmovl"||action=="irmovl"||action=="rmmovl"||action=="mrmovl")
+            {
+            	var select_reg1,select_reg2;
+            	select_reg2=this.select_reg(R2);
+            	switch(action)
+            	{
+            		case "rrmovl":
+            		    select_reg1=this.select_reg(R1);
+            		    this.reg[select_reg2]=this.reg[select_reg1];
+            		    break;
+            		case "irmovl":
+            		    var Im=parseInt(R1,10);
+            		    this.reg[select_reg2]=Im;
+            		    break;
+            		case "rmmovl":
+            		    select_reg1=this.select_reg(R1);
+                        var Im="",i;
+                        for(i=0;i<R2.length;i++)
+                        {
+                        	if(R2[i]=="(") {i++;break;}
+                        	else Im+=R2[i];
+                        }
+                        select_reg2=this.select_reg(R2.substring(i,i+4));
+                        var valE=this.reg[select_reg2]+Im;
+                        this.addr[valE]=this.reg[select_reg1];
+                        break;
+                    case "mrmovl":
+                        select_reg2=this.select_reg(R2);
+                        var Im="",i;
+                        for(i=0;i<R1.length;i++)
+                        {
+                        	if(R1[i]=="(") {i++;break;}
+                        	else Im+=R1[i];
+                        }
+                        select_reg1=this.select_reg(R1.substring(i,i+4));
+                        var valE=this.reg[select_reg1]+Im;
+                        this.reg[select_reg2]=this.addr[valE];
+                        break;
+            	}
+            }
+            if(action=="pushl")
+            {
+            	var select_reg1=this.select_reg[R1];
+            	this.reg[4]-=4;
+            	this.addr[this.reg[4]]=this.reg[select_reg1];
+            }
+            if(action=="popl")
+            {
+            	var select_reg1=this.select_reg[R1];
+            	this.reg[select_reg1]=this.addr[this.reg[4]];
+            	this.reg[4]+=4;
+            }
+            this.show_reg();
+        }
 	}
 
 	function calculate_CPI()
@@ -1713,7 +1694,7 @@
 		var rp=3*ins_freq["ret"]*cond_freq["ret"];
 
 		var CPI=1.0+lp+mp+rp;
-		return CPI.toFixed(3);
+		return CPI;
 	}
 
 	function clone(obj) {
@@ -1740,26 +1721,26 @@
      return o;
     }
 
-        var F_record=new Array();
-		var D_record=new Array();
-		var E_record=new Array();
-		var M_record=new Array();
-		var W_record=new Array();
-		var inF_record=new Array();
-		var inD_record=new Array();
-		var inE_record=new Array();
-		var inM_record=new Array();
-		var inW_record=new Array();
-		var SPC_record=new Array();
-		var FB_record=new Array();
-		var SFA_record=new Array();
-		var PCL_record=new Array();
-		var record_flag=new Array();
+    var F_record=new Array();
+	var D_record=new Array();
+	var E_record=new Array();
+	var M_record=new Array();
+	var W_record=new Array();
+	var inF_record=new Array();
+	var inD_record=new Array();
+	var inE_record=new Array();
+	var inM_record=new Array();
+	var inW_record=new Array();
+	var SPC_record=new Array();
+	var FB_record=new Array();
+	var SFA_record=new Array();
+	var PCL_record=new Array();
+	var record_flag=new Array();
 
 	function record()
-		{
+	{
 
-		}
+	}
 		record.prototype={
 
 			recordF : function(F)
