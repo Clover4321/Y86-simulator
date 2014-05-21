@@ -1559,7 +1559,7 @@
 	    },
 		Y86compiler:function()
         {
-    	    var dir=prompt("Please enter a Y86 instruction");
+    	    var dir=$("#y86asm").val();
     	    var dir_trimmed=$.trim(dir);
     	    var action,R1="",R2,Im;
     	    var i,j,k,temp;
@@ -1643,7 +1643,7 @@
                         }
                         select_reg2=this.select_reg(R2.substring(i,i+4));
                         var valE=this.reg[select_reg2]+Im;
-                        this.addr[valE]=this.reg[select_reg1];
+                        window.VM.Memory.addr[valE]=this.reg[select_reg1];
                         break;
                     case "mrmovl":
                         select_reg2=this.select_reg(R2);
@@ -1655,7 +1655,7 @@
                         }
                         select_reg1=this.select_reg(R1.substring(i,i+4));
                         var valE=this.reg[select_reg1]+Im;
-                        this.reg[select_reg2]=this.addr[valE];
+                        this.reg[select_reg2]=window.VM.Memory.addr[valE];
                         break;
             	}
             }
@@ -1663,7 +1663,7 @@
             {
             	var select_reg1=this.select_reg[R1];
             	this.reg[4]-=4;
-            	this.addr[this.reg[4]]=this.reg[select_reg1];
+            	window.VM.Memory.addr[this.reg[4]]=this.reg[select_reg1];
             }
             if(action=="popl")
             {

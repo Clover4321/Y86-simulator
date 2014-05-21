@@ -29,6 +29,14 @@ var asmIns;
 				if (asmIns) {
 					window.VM.Memory.initialMemory();
 					window.VM.Memory.parseInstructor(asmIns);
+					$('#drop_area').animate({
+						backgroundColor:'rgba(255,255,255,0.3)'
+						},
+						500);
+					$('#drop_area').animate({
+						backgroundColor:'rgba(255,255,255,0)'
+						},
+						500);
 					dest.innerHTML = "Loaded!";
 				};
 			}

@@ -5,7 +5,7 @@ html {
 body {
 	background: url(../img/bg.jpg);
 	margin: 0 auto;
-	font-family: "HelveticaNeue LT 35 Thin";
+	font-family: "Helvetica";
 	font-size: 20px;
 	color: white;
 	padding-left: 15px;
@@ -17,6 +17,18 @@ form {
 	margin-top: 5px;
 }
 
+#myModal{
+	color: black;
+}
+
+.btn{
+	background-color: rgba(0,0,0,0);
+}
+
+#y86asm{
+	color: black;
+}
+
 .page {
 	height: 768px;
 	display: block;
@@ -24,6 +36,13 @@ form {
 
 .filename {
 	text-align: right;
+}
+
+.form-control{
+	text-align: right;
+	color: white;
+	width: 50%;
+	background-color: rgba(0,0,0,0);
 }
 
 #controlBar1{
@@ -37,7 +56,7 @@ form {
 }
 
 #currentCycle{
-	padding-top: 15px;
+	margin-top: 15px;
 	font-size: 24px;
 }
 
@@ -52,6 +71,15 @@ form {
 
 #regTitle{
 	height: 60px;
+}
+
+#F,
+#D,
+#E,
+#M,
+#W,
+#R{
+	color: rgb(200,200,200);
 }
 
 .topArea{
